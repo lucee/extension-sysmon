@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE func-lib PUBLIC "-//Railo//DTD CFML Function Library 1.0//EN"
+	"dtd/web-cfmfunctionlibrary_1_0.dtd">
+<func-lib>
+	<flib-version>1.00</flib-version>
+	<short-name>System Monitoring</short-name>
+	<uri>http://extension.lucee.org/sysmon</uri>
+	<display-name>System Monitoring</display-name>
+	<description>
+		System monitoring extension providing CPU, memory, disk, network, and OS metrics
+	</description>
+
+	<!-- GetCPUUsage -->
+	<function>
+		<name>GetCPUUsage</name>
+		<member-name>GetCPUUsage</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetCPUUsage</class>
+		<keywords>system, cpu, monitoring</keywords>
+		<description>Returns the current CPU usage as a percentage. Backward compatible function when removed from core.</description>
+		<return>
+			<type>double</type>
+		</return>
+	</function>
+
+	<!-- GetProcessorInfo -->
+	<function>
+		<name>GetProcessorInfo</name>
+		<member-name>GetProcessorInfo</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetProcessorInfo</class>
+		<keywords>system, cpu, processor, hardware</keywords>
+		<description>Returns detailed processor information including physical/logical core count, speed, and vendor.</description>
+		<return>
+			<type>struct</type>
+		</return>
+	</function>
+
+	<!-- GetMemoryUsage -->
+	<function>
+		<name>GetMemoryUsage</name>
+		<member-name>GetMemoryUsage</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetMemoryUsage</class>
+		<keywords>system, memory, ram, usage</keywords>
+		<description>Returns memory usage information: total, used, available, and percent used.</description>
+		<return>
+			<type>struct</type>
+		</return>
+	</function>
+
+	<!-- GetMemoryMetrics -->
+	<function>
+		<name>GetMemoryMetrics</name>
+		<member-name>GetMemoryMetrics</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetMemoryMetrics</class>
+		<keywords>system, memory, metrics, swap, virtual</keywords>
+		<description>Returns detailed memory metrics including physical RAM, virtual memory, and swap statistics.</description>
+		<return>
+			<type>struct</type>
+		</return>
+	</function>
+
+	<!-- GetDiskUsage -->
+	<function>
+		<name>GetDiskUsage</name>
+		<member-name>GetDiskUsage</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetDiskUsage</class>
+		<keywords>system, disk, storage, partition</keywords>
+		<description>Returns disk usage information for a specific mount point or partition.</description>
+		<argument>
+			<name>path</name>
+			<type>string</type>
+			<required>No</required>
+			<default>/</default>
+			<description>Mount point path (defaults to root filesystem)</description>
+		</argument>
+		<return>
+			<type>struct</type>
+		</return>
+	</function>
+
+	<!-- GetDiskMetrics -->
+	<function>
+		<name>GetDiskMetrics</name>
+		<member-name>GetDiskMetrics</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetDiskMetrics</class>
+		<keywords>system, disk, metrics, partitions, i/o</keywords>
+		<description>Returns detailed disk metrics for all partitions including space and I/O statistics.</description>
+		<return>
+			<type>array</type>
+		</return>
+	</function>
+
+	<!-- GetNetworkInfo -->
+	<function>
+		<name>GetNetworkInfo</name>
+		<member-name>GetNetworkInfo</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetNetworkInfo</class>
+		<keywords>system, network, interfaces, traffic</keywords>
+		<description>Returns network interface information and traffic statistics for all network interfaces.</description>
+		<return>
+			<type>array</type>
+		</return>
+	</function>
+
+	<!-- GetOSVersion -->
+	<function>
+		<name>GetOSVersion</name>
+		<member-name>GetOSVersion</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetOSVersion</class>
+		<keywords>system, os, operating system, version</keywords>
+		<description>Returns operating system information including name, version, family, and build details.</description>
+		<return>
+			<type>struct</type>
+		</return>
+	</function>
+
+	<!-- GetSystemUptime -->
+	<function>
+		<name>GetSystemUptime</name>
+		<member-name>GetSystemUptime</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetSystemUptime</class>
+		<keywords>system, uptime, boot, time</keywords>
+		<description>Returns system uptime in milliseconds since last boot.</description>
+		<return>
+			<type>double</type>
+		</return>
+	</function>
+
+	<!-- GetSystemInfo -->
+	<function>
+		<name>GetSystemInfo</name>
+		<member-name>GetSystemInfo</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetSystemInfo</class>
+		<keywords>system, info, snapshot, metrics</keywords>
+		<description>Returns a complete system information snapshot including all CPU, memory, disk, and OS metrics.</description>
+		<return>
+			<type>struct</type>
+		</return>
+	</function>
+
+	<!-- GetProcessList -->
+	<function>
+		<name>GetProcessList</name>
+		<member-name>GetProcessList</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetProcessList</class>
+		<keywords>system, processes, list, running</keywords>
+		<description>Returns a list of all running processes with their PID, name, CPU usage, and memory usage.</description>
+		<argument>
+			<name>limit</name>
+			<type>numeric</type>
+			<required>No</required>
+			<default></default>
+			<description>Limit the number of processes returned (optional)</description>
+		</argument>
+		<return>
+			<type>array</type>
+		</return>
+	</function>
+
+	<!-- GetProcessInfo -->
+	<function>
+		<name>GetProcessInfo</name>
+		<member-name>GetProcessInfo</member-name>
+		<class maven="{maven}">org.lucee.extension.sysmon.functions.GetProcessInfo</class>
+		<keywords>system, process, info, details, pid</keywords>
+		<description>Returns detailed information for a specific process by PID.</description>
+		<argument>
+			<name>pid</name>
+			<type>numeric</type>
+			<required>Yes</required>
+			<description>Process ID to retrieve information for</description>
+		</argument>
+		<return>
+			<type>struct</type>
+		</return>
+	</function>
+
+</func-lib>

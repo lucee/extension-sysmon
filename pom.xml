@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.lucee</groupId>
+    <artifactId>sysmon-extension</artifactId>
+    <version>1.0.0.0-ALPHA</version>
+    <packaging>pom</packaging>
+    <name>System Monitoring Extension</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+        <image>https://raw.githubusercontent.com/lucee/extension-sysmon/main/source/images/logo.png</image>
+        <buildDate>${maven.build.timestamp}</buildDate>
+        <id>1D696A9C-10D1-481F-B53FB01E42332E6B</id>
+        <mvnGroupId>org.lucee</mvnGroupId>
+        <mvnGroupPath>org/lucee</mvnGroupPath>
+        <mvnArtifactId>sysmon</mvnArtifactId>
+        <filename>sysmon-extension</filename>
+        <luceeCoreVersion>7.0.0.395</luceeCoreVersion>
+        <releaseType>server</releaseType>
+        <label>System Monitoring Extension</label>
+        <release.url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</release.url>
+        <snapshot.url>https://oss.sonatype.org/content/repositories/snapshots/</snapshot.url>
+    </properties>
+
+    <scm>
+        <url>https://github.com/lucee/extension-sysmon</url>
+        <connection>scm:git:git://github.com/lucee/extension-sysmon.git</connection>
+        <developerConnection>scm:git:git@github.com:lucee/extension-sysmon.git</developerConnection>
+        <tag>${project.version}</tag>
+    </scm>
+
+    <licenses>
+        <license>
+            <name>The GNU Lesser General Public License, Version 2.1</name>
+            <url>http://www.gnu.org/licenses/lgpl-2.1.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>micstriit</id>
+            <name>Michael Offner</name>
+            <email>michael@lucee.org</email>
+            <organization>Lucee Association Switzerland</organization>
+            <organizationUrl>http://lucee.org</organizationUrl>
+            <roles>
+                <role>Project-Administrator</role>
+                <role>Developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
+
+    <description>System monitoring extension providing CPU, memory, disk, network, and OS metrics</description>
+    <url>https://github.com/lucee/extension-sysmon</url>
+
+    <profiles>
+        <profile>
+            <id>release-sign-artifacts</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>3.0.1</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <files>
+                                        <file>${project.build.directory}/${project.artifactId}-${project.version}.lex</file>
+                                    </files>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-release-plugin</artifactId>
+                      <version>3.0.0</version>
+                      <configuration>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                        <useReleaseProfile>false</useReleaseProfile>
+                        <releaseProfiles>release</releaseProfiles>
+                        <goals>deploy</goals>
+                      </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <ant antfile="build.xml" target="clean">
+                                    <property name="bundleversion" value="${project.version}"/>
+                                    <property name="bundlename" value="${bundlename}"/>
+                                    <property name="filename" value="${project.artifactId}"/>
+                                    <property name="groupId" value="${project.groupId}"/>
+                                    <property name="artifactId" value="${project.artifactId}"/>
+                                    <property name="id" value="${id}"/>
+                                    <property name="luceeCoreVersion" value="${luceeCoreVersion}"/>
+                                    <property name="releaseType" value="${releaseType}"/>
+                                    <property name="label" value="${label}"/>
+                                    <property name="description" value="${project.description}"/>
+                                    <property name="maven.goal" value="${goal}"/>
+                                    <property name="mvnGroupId" value="${mvnGroupId}"/>
+                                    <property name="mvnGroupPath" value="${mvnGroupPath}"/>
+                                    <property name="mvnArtifactId" value="${mvnArtifactId}"/>
+                                    <property name="mvnVersion" value="${project.version}"/>
+                                    <property name="maven.username" value="${env.MAVEN_USERNAME}"/>
+                                    <property name="maven.password" value="${env.MAVEN_PASSWORD}"/>
+                                    <property name="gpg.passphrase" value="${env.GPG_PASSPHRASE}"/>
+                                </ant>
+                            </target>
+                            <exportAntProperties>true</exportAntProperties>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-artifacts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.build.directory}/${project.artifactId}-${project.version}.lex</file>
+                                    <type>lex</type>
+                                </artifact>
+                                <artifact>
+                                    <file>${project.build.directory}/${project.artifactId}-${project.version}.lite.lex</file>
+                                    <type>lex</type>
+                                    <classifier>lite</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>cleanup</id>
+                        <phase>post-package</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <configuration>
+                            <filesets>
+                                <fileset>
+                                    <directory>${project.build.directory}/antrun</directory>
+                                    <includes>
+                                        <include>**/*</include>
+                                    </includes>
+                                </fileset>
+                                <fileset>
+                                    <directory>${project.build.directory}/archive-tmp</directory>
+                                    <includes>
+                                        <include>**/*</include>
+                                    </includes>
+                                </fileset>
+                            </filesets>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.0.0-M1</version>
+                <executions>
+                    <execution>
+                        <id>deploy-lite</id>
+                        <phase>deploy</phase>
+                        <goals>
+                            <goal>deploy-file</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.build.directory}/${project.artifactId}-${project.version}.lite.lex</file>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <version>${project.version}</version>
+                            <classifier>lite</classifier>
+                            <repositoryId>ossrh</repositoryId>
+                            <url>${deploy.url}</url>
+                            <packaging>lex</packaging>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+              <groupId>org.sonatype.central</groupId>
+              <artifactId>central-publishing-maven-plugin</artifactId>
+              <version>0.8.0</version>
+              <extensions>true</extensions>
+              <configuration>
+                <publishingServerId>ossrh</publishingServerId>
+                <autoPublish>true</autoPublish>
+              </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

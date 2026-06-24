@@ -1,0 +1,15 @@
+target/
+build/
+temp/
+.classpath
+.project
+.settings/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+.vscode/
+node_modules/
+dist/

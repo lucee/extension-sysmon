@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="clean" basedir="." name="sysmon-extension">
+    <description>
+        Build System Monitoring Extension
+    </description>
+    <!-- set global properties for this build -->
+
+    <property name="src" location="source/java/src"/>
+    <property name="srcImg" location="source/images"/>
+    <property name="temp" location="temp"/>
+    <property name="build" location="build"/>
+    <property name="dist" location="target"/>
+
+    <property name="fld" location="source/fld"/>
+
+    <target name="init">
+        <!-- Create the time stamp -->
+        <tstamp/>
+
+        <delete dir="${temp}"/>
+        <delete dir="${dist}"/>
+        <!-- Create the build directory structure used by compile -->
+        <mkdir dir="${temp}"/>
+        <mkdir dir="${build}"/>
+        <mkdir dir="${dist}/"/>
+    </target>
+
+    <target name="maven-build" depends="init">
+
+        <!-- set default values for undefined properties -->
+        <property name="maven.username" value=""/>
+        <property name="maven.password" value=""/>
+        <property name="gpg.passphrase" value=""/>
+        <property name="goal" value="install"/>
+
+        <!-- default to install if goal was not passed -->
+        <condition property="maven.goal" value="install">
+            <not><isset property="maven.goal"/></not>
+        </condition>
+
+        <condition property="is.deploy" value="true" else="false">
+            <equals arg1="${maven.goal}" arg2="deploy"/>
+        </condition>
+
+        <!-- Check if artifact already exists in Maven Central -->
+        <condition property="artifact.exists">
+            <and>
+                <equals arg1="${is.deploy}" arg2="true"/>
+                <http url="https://repo1.maven.org/maven2/${mvnGroupPath}/${mvnArtifactId}/${bundleversion}/${mvnArtifactId}-${bundleversion}.pom"/>
+            </and>
+        </condition>
+
+        <!-- Set effective goal based on whether artifact exists -->
+        <condition property="effective.goal" value="install" else="${maven.goal}">
+            <equals arg1="${artifact.exists}" arg2="true"/>
+        </condition>
+
+        <echo>goal:${maven.goal}</echo>
+        <echo>effective.goal:${effective.goal}</echo>
+        <echo>performRelease:${is.deploy}</echo>
+        <echo>groupId:${mvnGroupId}</echo>
+        <echo>groupPath:${mvnGroupPath}</echo>
+        <echo>artifactId:${mvnArtifactId}</echo>
+        <echo>bundleversion:${bundleversion}</echo>
+
+        <exec dir="source/java" executable="mvn" failonerror="true">
+            <arg value="clean"/>
+            <arg value="${effective.goal}"/>
+            <arg value="-Drevision=${bundleversion}"/>
+            <arg value="-DperformRelease=${is.deploy}"/>
+            <arg value="-e"/>
+            <arg value="--settings"/>
+            <arg value="maven-settings.xml"/>
+            <arg value="-Dmaven.username=${maven.username}"/>
+            <arg value="-Dmaven.password=${maven.password}"/>
+            <arg value="-Dgpg.passphrase=${gpg.passphrase}"/>
+        </exec>
+
+        <!-- Copy dependencies into temp/dependency in Maven repo layout (exclude provided and test scopes) -->
+        <exec dir="source/java" executable="mvn" failonerror="true">
+            <arg value="-DoutputDirectory=${temp}/dependency"/>
+            <arg value="-Dmdep.copyPom=true"/>
+            <arg value="-Dmdep.useRepositoryLayout=true"/>
+            <arg value="-DincludeScope=runtime"/>
+            <arg value="-Drevision=${bundleversion}"/>
+            <arg value="dependency:copy-dependencies"/>
+        </exec>
+
+        <!-- Copy parent POMs automatically -->
+        <exec executable="bash" failonerror="true">
+            <arg value="${basedir}/copy-parent-poms.sh"/>
+            <arg value="${temp}/dependency"/>
+        </exec>
+    </target>
+
+    <target name="copy-dependencies" depends="maven-build">
+        <!-- Create maven directory in extension folder -->
+        <mkdir dir="${dist}/extension/maven/${mvnGroupPath}/${mvnArtifactId}/${bundleversion}"/>
+
+        <!-- Copy the main artifact JAR to proper Maven structure -->
+        <copy todir="${dist}/extension/maven/${mvnGroupPath}/${mvnArtifactId}/${bundleversion}">
+            <fileset dir="source/java/target">
+                <include name="*.jar"/>
+                <exclude name="*-sources.jar"/>
+                <exclude name="*-javadoc.jar"/>
+            </fileset>
+        </copy>
+
+        <!-- Copy the flattened POM as the main artifact POM -->
+        <copy file="source/java/.flattened-pom.xml"
+              tofile="${dist}/extension/maven/${mvnGroupPath}/${mvnArtifactId}/${bundleversion}/${mvnArtifactId}-${bundleversion}.pom"/>
+
+        <!-- Copy all dependencies directly to maven with proper repository layout -->
+        <copy todir="${dist}/extension/maven">
+            <fileset dir="${temp}/dependency">
+                <include name="**/*"/>
+            </fileset>
+        </copy>
+
+    </target>
+
+    <target name="copy-images" depends="copy-dependencies">
+        <mkdir dir="${dist}/extension/images"/>
+        <copy todir="${dist}/extension/images" failonerror="false">
+            <fileset dir="${srcImg}">
+                <include name="**/*"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="copy-fld" depends="copy-images">
+        <mkdir dir="${dist}/extension/fld"/>
+        <copy todir="${dist}/extension/fld">
+            <fileset dir="${fld}">
+                <include name="*.fld"/>
+            </fileset>
+        </copy>
+    </target>
+
+    <target name="create-archive" depends="copy-fld">
+        <!-- Create the compressed extension file (.lex) -->
+        <zip destfile="${dist}/${filename}-${bundleversion}.lex">
+            <zipfileset dir="${dist}/extension/fld" prefix="fld"/>
+            <zipfileset dir="${dist}/extension/maven" prefix="maven"/>
+            <zipfileset dir="${dist}/extension/images" prefix="images" erroronmissingdir="false"/>
+        </zip>
+
+        <!-- Create lite archive (without external dependencies) -->
+        <zip destfile="${dist}/${filename}-${bundleversion}.lite.lex">
+            <zipfileset dir="${dist}/extension/fld" prefix="fld"/>
+        </zip>
+    </target>
+
+    <target name="clean" depends="create-archive">
+        <echo message="Extension built successfully: ${dist}/${filename}-${bundleversion}.lex"/>
+    </target>
+</project>
