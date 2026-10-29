@@ -119,39 +119,56 @@
 
     </target>
 
-    <target name="copy-images" depends="copy-dependencies">
-        <mkdir dir="${dist}/extension/images"/>
-        <copy todir="${dist}/extension/images" failonerror="false">
-            <fileset dir="${srcImg}">
-                <include name="**/*"/>
-            </fileset>
-        </copy>
+    <target name="createManifest" depends="copy-dependencies" description="create MANIFEST.MF file" >
+        <tstamp>
+            <format property="NOW" pattern="yyyy-MM-dd HH:mm:ss" />
+        </tstamp>
+        <echo file="${dist}/extension/META-INF/MANIFEST.MF">Manifest-Version: 1.0
+Built-Date: ${NOW}
+version: "${bundleversion}"
+id: "${id}"
+groupId: "${groupId}"
+artifactId: "${artifactId}"
+name: "${label}"
+description: "${description}"
+lucee-core-version: "${luceeCoreVersion}"
+release-type: ${releaseType}
+start-bundles: false
+</echo>
     </target>
 
-    <target name="copy-fld" depends="copy-images">
-        <mkdir dir="${dist}/extension/fld"/>
-        <copy todir="${dist}/extension/fld">
-            <fileset dir="${fld}">
-                <include name="*.fld"/>
+    <target name="dist" depends="createManifest"
+            description="generate the distribution" >
+
+        <!-- copy the logo -->
+        <copy todir="${dist}/extension/META-INF">
+            <fileset dir="${srcImg}/">
+                <include name="logo.png"/>
             </fileset>
         </copy>
-    </target>
 
-    <target name="create-archive" depends="copy-fld">
-        <!-- Create the compressed extension file (.lex) -->
+        <!-- copy the flds necessary and resolve the maven coordinates -->
+        <copy file="${fld}/function.fld" tofile="${dist}/extension/flds/sysmon-functions.fld" />
+        <replaceregexp
+          file="${dist}/extension/flds/sysmon-functions.fld"
+          match="\{maven\}"
+          replace="${mvnGroupId}:${mvnArtifactId}:${bundleversion}"
+          byline="true"/>
+
+        <!-- Zip everything -->
         <zip destfile="${dist}/${filename}-${bundleversion}.lex">
-            <zipfileset dir="${dist}/extension/fld" prefix="fld"/>
-            <zipfileset dir="${dist}/extension/maven" prefix="maven"/>
-            <zipfileset dir="${dist}/extension/images" prefix="images" erroronmissingdir="false"/>
+            <zipfileset dir="${dist}/extension"/>
         </zip>
 
-        <!-- Create lite archive (without external dependencies) -->
+        <!-- Lite artifact: same but without bundled Maven dependencies -->
         <zip destfile="${dist}/${filename}-${bundleversion}.lite.lex">
-            <zipfileset dir="${dist}/extension/fld" prefix="fld"/>
+            <zipfileset dir="${dist}/extension">
+                <exclude name="maven/**"/>
+            </zipfileset>
         </zip>
     </target>
 
-    <target name="clean" depends="create-archive">
+    <target name="clean" depends="dist" description="clean up" >
         <echo message="Extension built successfully: ${dist}/${filename}-${bundleversion}.lex"/>
     </target>
 </project>
