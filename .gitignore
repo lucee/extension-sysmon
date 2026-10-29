@@ -13,3 +13,4 @@ temp/
 .vscode/
 node_modules/
 dist/
+.flattened-pom.xml
