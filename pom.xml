@@ -5,11 +5,20 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.lucee</groupId>
     <artifactId>sysmon-extension</artifactId>
-    <version>1.0.0.0-ALPHA</version>
+    <version>${revision}</version>
     <packaging>pom</packaging>
     <name>System Monitoring Extension</name>
 
     <properties>
+        <!-- CI-friendly version (same approach as Lucee core LDEV-6516).
+             Local and PR builds use the default below (base.0 + qualifier).
+             Every push to the default branch gets -Drevision=base.N[qualifier] from GitHub Actions, N = highest existing build + 1,
+             and publishes it (-SNAPSHOT to the Central snapshot repository).
+             For a release candidate or final release pick the qualifier in a manual run (or set it here), see README.md. -->
+        <extension.version.base>1.0.0</extension.version.base>
+        <extension.version.build>0</extension.version.build>
+        <extension.version.qualifier>-SNAPSHOT</extension.version.qualifier>
+        <revision>${extension.version.base}.${extension.version.build}${extension.version.qualifier}</revision>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -110,6 +119,32 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <configuration>
+                    <flattenMode>bom</flattenMode>
+                    <!-- resolve ${revision} in the installed/deployed pom (packaging pom is skipped by default) -->
+                    <updatePomFile>true</updatePomFile>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>1.8</version>
@@ -141,6 +176,16 @@
                                     <property name="maven.password" value="${env.MAVEN_PASSWORD}"/>
                                     <property name="gpg.passphrase" value="${env.GPG_PASSPHRASE}"/>
                                 </ant>
+                                <condition property="isSnapshot" value="true" else="false">
+                                    <matches string="${project.version}" pattern=".*-SNAPSHOT"/>
+                                </condition>
+                                <condition property="deploy.url" value="${snapshot.url}">
+                                    <istrue value="${isSnapshot}"/>
+                                </condition>
+                                <condition property="deploy.url" value="${release.url}">
+                                    <isfalse value="${isSnapshot}"/>
+                                </condition>
+                                <echo message="Deploying to URL: ${deploy.url}" />
                             </target>
                             <exportAntProperties>true</exportAntProperties>
                         </configuration>
